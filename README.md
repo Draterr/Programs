@@ -9,4 +9,5 @@
 - [png.sh (rename png from windows to linux)](https://github.com/Draterr/Programs/blob/main/png.sh)<br>
 - [steam.py (Script to notify if a steam game is on discount)](https://github.com/Draterr/Programs/blob/main/steam.py)<br>
 - [asciicode2characters.py (Script to turn an array of ascii code to characters](https://github.com/Draterr/Programs/blob/main/asciicode2characters.py)</br>
+- [blindsql.py (Script to automate blind SQL injection for the Web Security Academy Labs](https://github.com/Draterr/Programs/blob/main/blindsql.py)</br>
 
