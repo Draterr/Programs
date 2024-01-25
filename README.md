@@ -1,6 +1,7 @@
 # Drater's Automation Scripts
 # Table Of contents
 
+- [httpserver.py (custom http server from scratch in python)](https://github.com/Draterr/Programs/blob/main/httpserver.py)<br>
 - [excelcmp.py (excel sheets automation)](https://github.com/Draterr/Programs/blob/main/excelcmp.py)<br>
 - [redirect.py (simple redirect server for testing SSRF)](https://github.com/Draterr/Programs/blob/main/redirect.py)<br>
 - [sc.py , scrap.py (web scraping Python scripts)](https://github.com/Draterr/Programs/blob/main/sc.py)<br>
