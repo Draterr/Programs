@@ -1,18 +1,28 @@
+from site import check_enableusersite
+from tabnanny import check
 import urllib.parse
 import socket
 import re
 import sys
 import os
 
-HOST = '0.0.0.0'
-PORT = int(sys.argv[1])
-DIR = sys.argv[2]
-env_home = os.environ["HOME"]
+#check if sufficient arguments are provided
+if len(sys.argv) < 3 :
+        sys.exit("Please specify the arguments 'python3 httpserver.py {PORT} {Directory}'")
+else:
+    HOST = '0.0.0.0'
+    PORT = int(sys.argv[1])
+    DIR = sys.argv[2]
+    env_home = os.environ["HOME"]
 
+
+
+#check if the DIR arguments starts with "~"
 if "~" in DIR:
     DIR.replace("~",env_home)
 elif DIR[-1] != "/":
     DIR += "/"
+
 def run():
     if not os.path.isdir(DIR):
         sys.exit("Directory does not exist")
@@ -46,7 +56,12 @@ def construct_response(res):
     match code:
         case 200:
             response_code = "200 OK"
-            ext = re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",val_path)[0]
+            check_extension= re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",val_path)
+            if not check_extension:
+                ext = "html"
+                val_path += "/index.html"
+            else:
+                ext = re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",val_path)[0]
             available_content_types ={"js": "application/javascript", "html": "text/html","htm": "text/html", "css": "text/css", "jpg": "image/jpeg", "png": "image/png","svg":"image/svg+xml","ico":"image/vnd.microsoft.icon","json":"application/json","jpeg":"image/jpeg","pdf":"application/pdf","txt":"text/plain","xml":"application/xml"} 
             content_type = available_content_types[ext]
             output = get_file(val_path,content_type)
@@ -79,10 +94,16 @@ def parse_request(req_list):
     url_decoded_path = urllib.parse.unquote(req_path) #URL decode the path
     path_pat = re.compile("^((?:\/[a-zA-Z0-19\.\-_~!\$&'\(\)\*\+,;=:@]+)+)(\/?\?\w+\=\w+(?:&\w+\=\w+)*$)?|\/") # regex to match for a valid path
     path_match = path_pat.match(url_decoded_path)
+    path_match_group =  path_match.group()
     ver_pat = re.compile("^(HTTP\/[2-3])$|^(HTTP\/1)(?:\.[0,1])?$") # regex to match for a valid HTTP version
     ver_match = ver_pat.match(req_ver)
-    ext = re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",is_slash(path_match.group()))[0]
-    output = get_file(path_match.group(),ext)
+    check_extension = re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",is_slash(path_match_group))
+    if not check_extension:
+        ext = "html"
+        path_match_group += "/index.html"
+    else:
+        ext = re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",is_slash(path_match_group))[0]
+    output = get_file(path_match_group,ext)
     if  req_method not in valid_req_method or path_match is None or ver_match is None:
         return 400,path_match,url_decoded_path
     elif req_method != "GET":
