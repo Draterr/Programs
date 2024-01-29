@@ -1,5 +1,3 @@
-from site import check_enableusersite
-from tabnanny import check
 import urllib.parse
 import socket
 import re
