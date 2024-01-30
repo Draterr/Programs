@@ -49,7 +49,7 @@ def construct_response(res):
     http_version = "HTTP/1.0"
     crlf = "\r\n"
     code, val_path, path = res
-    val_path = val_path.group()
+    val_path = val_path.group().split("?")[0]
     val_path = is_slash(val_path)
     match code:
         case 200:
@@ -82,6 +82,14 @@ def construct_response(res):
             response_code = "404 Not Found"
             final_response = f"{http_version} {response_code}{crlf}Content-Type: text/html;charset=UTF-8{crlf}Connection: close{crlf}{crlf}<h1>404</h1>\n<p>Page Not Found</p>"
             return bytes(final_response, 'utf-8')
+        case 403:
+            response_code = "403 Forbidden"
+            final_response = f"{http_version} {response_code}{crlf}Content-Type: text/html;charset=UTF-8{crlf}Connection: close{crlf}{crlf}<h1>403 Forbidden</h1>"
+            return bytes(final_response, 'utf-8')
+        case 500:
+            response_code = "500 Internal Server Error"
+            final_response = f"{http_version} {response_code}{crlf}Content-Type: text/html;charset=UTF-8{crlf}Connection: close{crlf}{crlf}<h1>Malicious Actitivty Found!</h1>"
+            return bytes(final_response, 'utf-8')
 
 def parse_request(req_list):
     valid_req_method = ['GET','POST','PATCH','PUT','DELETE','HEAD','CONNECT','OPTIONS','TRACE']
@@ -92,10 +100,12 @@ def parse_request(req_list):
     url_decoded_path = urllib.parse.unquote(req_path) #URL decode the path
     path_pat = re.compile("^((?:\/[a-zA-Z0-19\.\-_~!\$&'\(\)\*\+,;=:@]+)+)(\/?\?\w+\=\w+(?:&\w+\=\w+)*$)?|\/") # regex to match for a valid path
     path_match = path_pat.match(url_decoded_path)
-    path_match_group =  path_match.group()
+    path_match_group =  path_match.group().split("?")[0]
     ver_pat = re.compile("^(HTTP\/[2-3])$|^(HTTP\/1)(?:\.[0,1])?$") # regex to match for a valid HTTP version
     ver_match = ver_pat.match(req_ver)
     check_extension = re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",is_slash(path_match_group))
+    check_malicious = check_path_traversal(path_match_group) 
+    print(path_match_group)
     if not check_extension:
         ext = "html"
         path_match_group += "/index.html"
@@ -106,8 +116,12 @@ def parse_request(req_list):
         return 400,path_match,url_decoded_path
     elif req_method != "GET":
         return 501,path_match,url_decoded_path
+    elif check_malicious:
+        return 500,path_match,url_decoded_path
     elif output == 404:
         return 404,path_match,url_decoded_path 
+    elif output == 403:
+        return 403,path_match,url_decoded_path
     else:
         return 200,path_match,url_decoded_path
     
@@ -123,9 +137,12 @@ def get_file(file,extension):
     try:
         fp = open(DIR + file, readperm)
     except PermissionError:
-        return "No Read Access to File"
+        print("No Read Access to File")
+        return 403
     except FileNotFoundError:
         return 404
+    except OSError:
+        return 500
     else:
         with fp:
             return fp.read()
@@ -134,4 +151,11 @@ def is_slash(path):
     if path == "/":
         path = "/index.html"
     return path 
+
+def check_path_traversal(path):
+    dangerous = ["..\\","..","../"]
+    for i in dangerous:
+        if i in path:
+            return True
+    return False
 run()
