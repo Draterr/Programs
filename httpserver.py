@@ -56,8 +56,9 @@ def construct_response(res):
             response_code = "200 OK"
             check_extension= re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",val_path)
             if not check_extension:
-                ext = "html"
-                val_path += "/index.html"
+                # ext = "html"
+                # val_path += "/index.html"
+                ext = "txt"
             else:
                 ext = re.findall("\.(html|php|js\b|aspx|htm|jpg|png|css|asp|json|jpeg|svg|ico|pdf|txt|xml)",val_path)[0]
             available_content_types ={"js": "application/javascript", "html": "text/html","htm": "text/html", "css": "text/css", "jpg": "image/jpeg", "png": "image/png","svg":"image/svg+xml","ico":"image/vnd.microsoft.icon","json":"application/json","jpeg":"image/jpeg","pdf":"application/pdf","txt":"text/plain","xml":"application/xml"} 
